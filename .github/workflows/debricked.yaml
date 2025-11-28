@@ -3,7 +3,7 @@ name: Debricked scan
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   vulnerabilities-scan:
