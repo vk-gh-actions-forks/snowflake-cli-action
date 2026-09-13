@@ -1,6 +1,6 @@
 ﻿# action.yml
 name: "Install Snowflake CLI"
-description: "Download and install snowflake-cli"
+description: "[Moved to snowflakedb/snowflake-actions] Download and install snowflake-cli"
 branding:
   icon: "terminal"
   color: "blue"
@@ -37,9 +37,14 @@ runs:
   steps:
     - name: add extra telemetry data
       shell: bash
-      run: echo "SF_GITHUB_ACTION=true" >> "$GITHUB_ENV"
+      env:
+        # Bump on each release to match the repository tag
+        SF_CICD_INTEGRATION_VERSION: "v2.0"
+      run: |
+        echo "SF_GITHUB_ACTION=true" >> "$GITHUB_ENV"
+        echo "SF_CICD_INTEGRATION_VERSION=$SF_CICD_INTEGRATION_VERSION" >> "$GITHUB_ENV"
 
-    - uses: astral-sh/setup-uv@v7
+    - uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 #v7.1.6
       with:
         python-version: "3.11"
 
@@ -51,7 +56,7 @@ runs:
         exit 1
 
     - name: Install snowflake-cli (specific version)
-      if: ${{ inputs.cli-version != '' && inputs.custom-github-ref == '' }}
+      if: ${{ inputs.cli-version != '' && inputs.cli-version != 'latest' && inputs.custom-github-ref == '' }}
       shell: bash
       run: uv tool install snowflake-cli==${{ inputs.cli-version }}
 
@@ -61,7 +66,7 @@ runs:
       run: uv tool install "git+https://github.com/snowflakedb/snowflake-cli.git@${{ inputs.custom-github-ref }}"
 
     - name: Install snowflake-cli (latest release)
-      if: ${{ inputs.cli-version == '' && inputs.custom-github-ref == '' }}
+      if: ${{ (inputs.cli-version == '' || inputs.cli-version == 'latest') && inputs.custom-github-ref == '' }}
       shell: bash
       run: uv tool install snowflake-cli
 
